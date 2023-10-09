@@ -4,7 +4,7 @@ const productController = require("../controllers/productController");
 const { valideRole } = require("../controllers/rolesMiddleware");
 
 routes.post("/create", productController.upload, async (req, res, next) => {
-  console.log("request body in route", req.body);
+  // console.log("request body in route", req.body);
   await productController.createProduct(req, res);
   next();
 });
@@ -25,7 +25,7 @@ routes.get("/list", async (req, res, next) => {
   if (products?.status === 0) {
     return res.status(404).json({ message: "products not found" });
   }
-  console.log(products);
+  // console.log(products);
   return res.status(200).json(products);
 
   next();
@@ -41,20 +41,28 @@ routes.get("/details/:id", async (req, res, next) => {
   next();
 });
 
-routes.get("/search", async (req, res, next) => {
-  await productController.searchProduct(req, res);
+routes.post("/search", async (req, res, next) => {
+  const result = await productController.searchProduct(req, res);
+
+  if (result) {
+    return res.status(200).json(result);
+  } else return res.status(404).json({ message: "Nothing to show" });
+
   next();
 });
 
 routes.post("/:id/review", async (req, res, next) => {
-  await productController.createReview(req, res);
-  next();
+  const response = await productController.createReview(req, res);
+  if (response) {
+    return res.status(200).json({ message: "review added", response });
+  } else return res.status(409).json({ message: "unable to create review" });
 });
 
-routes.get("/:id/reviews", async (req, res, next) => {
+routes.get("/:id/reviews", async (req, res) => {
   const reviews = await productController.getReviews(req, res);
-  res.json(reviews);
-  next();
+  if (reviews) {
+    return res.status(200).json(reviews);
+  } else return res.status(4014).json({ message: "not found" });
 });
 
 //admin
@@ -87,5 +95,14 @@ routes.delete(
     next();
   }
 );
+
+routes.get("/:category", async (req, res, next) => {
+  const result = await productController.getProductByCategory(req, res);
+
+  if (result.status === 0) {
+    res.status(404).json({ message: "not product with specified category" });
+  } else return res.status(200).json(result);
+  next();
+});
 
 module.exports = routes;

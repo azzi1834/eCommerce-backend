@@ -11,9 +11,12 @@ routes.get("/profile/:id", async (req, res, next) => {
 
 //update Specific user route handler
 routes.put("/profile/:id", utilities.upload, async (req, res, next) => {
-  console.log("update route");
-  await userController.updateUser(req, res);
-  next();
+  const response = await userController.updateUser(req, res);
+
+  if (response.status === 0) {
+    return res.status(404).json({ message: "failed to update" });
+  }
+  return res.status(200).json(response);
 });
 
 routes.put(

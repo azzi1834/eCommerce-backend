@@ -4,6 +4,7 @@ const User = db.user;
 const { Op } = require("sequelize");
 const fs = require("fs");
 const multer = require("multer");
+const { toInteger } = require("lodash");
 const Review = db.review;
 
 const createProduct = async (req, res) => {
@@ -91,18 +92,21 @@ const getAllProducts = async (req, res) => {
 };
 
 const getProductDetails = async (req, res) => {
+  console.log("product detail controller");
   const product = await Product.findOne({
     where: {
       id: req.params.id,
     },
   });
-  console.log("product in conroller", product);
+
+  // console.log("product in conroller", product);
   if (!product) {
     return {
       status: 0,
       message: "product not found",
     };
   }
+  console.log("product found");
   const imagePaths = product.images.split(",");
 
   return {
@@ -112,36 +116,44 @@ const getProductDetails = async (req, res) => {
 };
 
 const searchProduct = async (req, res) => {
-  try {
-    const search = req.body.search;
-    console.log(search);
-    console.log(`"${search}"`);
-    const result = await Product.findAll({
-      where: {
-        name: {
-          [Op.substring]: `${search}`, //LIKE %search%
-        },
+  const search = req.body.search;
+  // console.log(search);
+  // console.log(`"${search}"`);
+  const result = await Product.findAll({
+    where: {
+      name: {
+        [Op.substring]: `${search}`, //LIKE %search%
       },
-    });
+    },
+  });
 
-    if (result.length > 0) {
-      console.log(result);
-    } else {
-      console.log("nothing to show");
-    }
-  } catch (error) {
-    res.status(400).send({ success: false, msg: error.message });
+  if (result.length > 0) {
+    console.log("result", result);
+    // return result;
+
+    const productsWithImagesArray = result.map((product) => ({
+      ...product,
+      images: product?.dataValues?.images?.split(","),
+    }));
+    console.log("productsWithImagesArray", productsWithImagesArray);
+    return productsWithImagesArray;
+  } else {
+    return {
+      status: 0,
+      message: "Nothig to show",
+    };
   }
 };
 
 const createReview = async (req, res) => {
-  const productId = req.params.id;
+  const productId = toInteger(req.params.id);
   const userId = req.user.id;
-  // console.log("user_id", userId);
-  // console.log("product_id", productId);
 
-  const product = await Review.create({ ...req.body, userId, productId });
-  // console.log(product);
+  req.body.userId = userId;
+  req.body.productId = productId;
+
+  const product = await Review.create(req.body);
+  return product;
 };
 
 //return reviews against particular product
@@ -176,6 +188,30 @@ const getReviews = async (req, res) => {
   return reviews;
 };
 
+const getProductByCategory = async (req, res) => {
+  const category = req.params.category;
+
+  const products = await Product.findAll({
+    where: {
+      category: {
+        [Op.substring]: `${category}`, //LIKE %search%
+      },
+    },
+  });
+  if (products.length > 0) {
+    const productsWithImagesArray = products.map((product) => ({
+      ...product,
+      images: product?.dataValues?.images?.split(","),
+    }));
+    console.log("productsWithImagesArray", productsWithImagesArray);
+    return productsWithImagesArray;
+  } else
+    return {
+      status: 0,
+      message: "not found",
+    };
+};
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "Images/Product");
@@ -197,4 +233,5 @@ module.exports = {
   upload,
   createReview,
   getReviews,
+  getProductByCategory,
 };

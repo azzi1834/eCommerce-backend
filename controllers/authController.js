@@ -9,6 +9,8 @@ const registerUser = async (req, res) => {
   const isUserExist = await User.findOne({
     where: { email: data.email },
   });
+
+  console.log("is user exist", isUserExist);
   if (isUserExist) {
     return {
       status: 0,
@@ -32,7 +34,9 @@ const registerUser = async (req, res) => {
 const loginUser = async (body) => {
   const data = body?.body;
 
-  const user = await User.findOne({ where: { email: data.email } });
+  // console.log("body", body);
+
+  const user = await User.findOne({ where: { email: data?.email } });
 
   if (!user) {
     return {
@@ -40,7 +44,7 @@ const loginUser = async (body) => {
       message: "user does not exist",
     };
   } else {
-    const match = await bcrypt.compare(data.password, user.password);
+    const match = await bcrypt.compare(data?.password, user.password);
     if (!match) {
       return {
         status: 0,

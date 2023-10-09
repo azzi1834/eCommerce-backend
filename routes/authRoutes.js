@@ -6,12 +6,13 @@ const utilities = require("../utils");
 
 //user registration route handler
 routes.post("/register", async (req, res, next) => {
-  // console.log("req.body/register/route", req.body);
   const user = await authController.registerUser(req, res);
+
+  console.log("user returned from controller", user);
   if (user?.status === 0) {
     return res.status(409).json(user);
-  } else return res.json(user);
-  next();
+  } else return res.status(200).json(user);
+  // next();
 });
 
 //user login route handler

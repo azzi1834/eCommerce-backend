@@ -21,10 +21,11 @@ app.use("/Images/Product", express.static("Images/Product"));
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", userRoutes); //same login as admin also user just different route
 app.use("/api/admin", productRoutes);
-
 app.use("/api/product", productRoutes);
 //restricted apis
+
 app.use(authMiddleware);
+app.use("/api/products", productRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/user", authRoutes);
 

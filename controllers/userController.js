@@ -32,13 +32,13 @@ const findUser = async (req, res) => {
 };
 
 const updateUser = async (req, res) => {
-  // console.log("update method");
   if (req.body.password) {
     req.body.password = bcrypt.hashSync(req.body.password, 10);
-  }
-  User.update(
+  } //hash password if found
+
+  const response = await User.update(
     {
-      profile: req?.file?.path,
+      profile: req?.file?.path, //save path of images
       ...req.body,
     },
     {
@@ -46,13 +46,21 @@ const updateUser = async (req, res) => {
         id: req.params.id,
       },
     }
-  )
-    .then((res) => {
-      console.log("User updated succesfully");
-    })
-    .catch((error) => {
-      console.error("Failed to update : ", error);
+  );
+
+  if (response[0] === 1) {
+    const user = await User.findOne({
+      where: {
+        id: req.params.id,
+      },
     });
+
+    return user;
+  }
+  return {
+    status: 0,
+    message: "unable to update",
+  };
 };
 
 const updateProfile = async (req, res) => {

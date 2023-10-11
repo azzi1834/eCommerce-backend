@@ -11,10 +11,23 @@ routes.get("/profile/:id", async (req, res, next) => {
 
 //update Specific user route handler
 routes.put("/profile/:id", utilities.upload, async (req, res, next) => {
+  console.log("req.body in updateUser", req?.body);
   const response = await userController.updateUser(req, res);
 
   if (response.status === 0) {
     return res.status(404).json({ message: "failed to update" });
+  }
+  return res.status(200).json(response);
+});
+
+routes.put("/change-email/:id", utilities.upload, async (req, res, next) => {
+  // console.log("req.body in change-email", req?.body);
+  const response = await userController.updateEmail(req, res);
+
+  if (response.status === 0) {
+    return res.status(404).json({ message: "Invalid Password" });
+  } else if (response.status === 401) {
+    return res.json(401).json({ messsage: "Ops! unable to update" });
   }
   return res.status(200).json(response);
 });
@@ -29,8 +42,16 @@ routes.put(
 );
 
 routes.put("/change-password/:id", async (req, res, next) => {
-  await userController.updateUser(req, res);
-  next();
+  const response = await userController.updatePassword(req, res);
+
+  console.log("response", response);
+
+  if (response.status === 0) {
+    return res.status(404).json({ message: "Invalid current Password" });
+  } else if (response.status === 401) {
+    return res.json(401).json({ messsage: "Ops! unable to update" });
+  }
+  return res.status(200).json(response);
 });
 
 routes.put(

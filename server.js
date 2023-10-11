@@ -1,9 +1,10 @@
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const productRoutes = require("./routes/productRoutes");
+const cartRoutes = require("./routes/cartRoutes");
+
 // const adminRoutes = require("./routes/adminRoutes");
 
-// const db = require("./models/index");
 const authMiddleware = require("./controllers/authToken");
 
 const express = require("express");
@@ -25,9 +26,12 @@ app.use("/api/product", productRoutes);
 //restricted apis
 
 app.use(authMiddleware);
+
 app.use("/api/products", productRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/user", authRoutes);
+
+app.use("/api/cart", cartRoutes);
 
 app.listen(process.env.PORT, () => {
   console.log("Server listening on", process.env.PORT);

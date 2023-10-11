@@ -18,7 +18,7 @@ const deleteUser = async (req, res) => {
 };
 
 const findUser = async (req, res) => {
-  const user = await User.findOne({
+  await User.findOne({
     where: {
       id: req.params.id,
     },
@@ -32,6 +32,8 @@ const findUser = async (req, res) => {
 };
 
 const updateUser = async (req, res) => {
+  console.log("req.body", req.body);
+
   if (req.body.password) {
     req.body.password = bcrypt.hashSync(req.body.password, 10);
   } //hash password if found
@@ -59,6 +61,132 @@ const updateUser = async (req, res) => {
   }
   return {
     status: 0,
+    message: "unable to update",
+  };
+};
+
+const updateEmail = async (req, res) => {
+  // console.log("req.body in update email", req?.body);
+
+  const data = req?.body;
+  const id = req.params.id;
+
+  // console.log("id from useparams", id);
+
+  const user = await User.findOne({
+    where: {
+      id,
+    },
+  });
+
+  // console.log("user find by id", user);
+
+  // console.log("data.password", data?.password);
+  // console.log("user.password", user?.password);
+
+  const match = await bcrypt.compare(data?.password, user.password);
+
+  if (!match) {
+    return {
+      status: 0,
+      message: "invalid password",
+    };
+  }
+
+  const response = await User.update(
+    {
+      profile: req?.file?.path, //save path of images
+      ...req.body,
+    },
+    {
+      where: {
+        id,
+      },
+    }
+  );
+
+  // console.log("response after updation", response);
+
+  if (response[0] === 1) {
+    const user = await User.findOne({
+      where: {
+        id,
+      },
+    });
+
+    return user;
+  }
+
+  return {
+    status: 401,
+    message: "unable to update",
+  };
+};
+
+const updatePassword = async (req, res) => {
+  // console.log("req.body in update password", req?.body);
+
+  const data = req?.body;
+  const id = req.params.id;
+
+  // console.log("id from useparams", id);
+
+  const user = await User.findOne({
+    where: {
+      id,
+    },
+  });
+
+  // console.log("user find by id", user);
+
+  // console.log("data.password", data?.password);
+  // console.log("user.password", user?.password);
+
+  // console.log("data.newPassword", data?.newPassword);
+
+  const match = await bcrypt.compare(data?.password, user?.password);
+
+  console.log("match", match);
+  if (!match) {
+    return {
+      status: 0,
+      message: "invalid current password",
+    };
+  }
+
+  data.newPassword = bcrypt.hashSync(data?.newPassword, 10);
+
+  // console.log("data.newPassword after::::", data.newPassword);
+
+  const response = await User.update(
+    {
+      profile: req?.file?.path, //save path of images
+      ...req.body,
+      password: data.newPassword,
+    },
+    {
+      where: {
+        id,
+      },
+    }
+  );
+
+  // console.log("response after updation", response);
+
+  if (response[0] === 1) {
+    const user = await User.findOne({
+      where: {
+        id,
+      },
+    });
+
+    // console.log("user ", user);
+
+    return user;
+  }
+
+  return {
+    status: 401,
     message: "unable to update",
   };
 };
@@ -113,4 +241,6 @@ module.exports = {
   updateUser,
   getAllUsers,
   updateProfile,
+  updateEmail,
+  updatePassword,
 };

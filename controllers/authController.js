@@ -5,20 +5,23 @@ const { jwtToken } = require("../utils");
 
 const registerUser = async (req, res) => {
   const data = req?.body?.body;
-  // console.log(data);
+  // const data = req?.body
+  // console.log("data in registerUser", data);
+
   const isUserExist = await User.findOne({
     where: { email: data.email },
   });
 
-  console.log("is user exist", isUserExist);
+  // console.log("is user exist", isUserExist);
+
   if (isUserExist) {
     return {
       status: 0,
       message: "User already exists",
     };
   } else {
-    data.password = bcrypt.hashSync(data.password, 10); //hashing synchronously 10 times
-    console.log(data.password);
+    data.password = bcrypt.hashSync(data?.password, 10); //hashing synchronously 10 times
+    // console.log(data?.password);
     // console.log("req.file", req.file);
 
     const userInfo = {
@@ -33,7 +36,7 @@ const registerUser = async (req, res) => {
 };
 const loginUser = async (body) => {
   const data = body?.body;
-
+  // const data = body;
   // console.log("body", body);
 
   const user = await User.findOne({ where: { email: data?.email } });

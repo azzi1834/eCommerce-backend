@@ -2,7 +2,7 @@ const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const productRoutes = require("./routes/productRoutes");
 const cartRoutes = require("./routes/cartRoutes");
-
+const addressRoutes = require("./routes/addressRoutes");
 // const adminRoutes = require("./routes/adminRoutes");
 
 const authMiddleware = require("./controllers/authToken");
@@ -29,7 +29,7 @@ app.use(authMiddleware);
 
 app.use("/api/products", productRoutes);
 app.use("/api/user", userRoutes);
-app.use("/api/user", authRoutes);
+app.use("/api/user", addressRoutes);
 
 app.use("/api/cart", cartRoutes);
 

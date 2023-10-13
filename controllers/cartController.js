@@ -11,8 +11,6 @@ const addToCart = async (req, res) => {
   req.body.userId = userId;
   req.body.productId = productId;
 
-  const { quantity, price } = req.body;
-
   console.log("req.body", req.body);
 
   //check if product aleady added to cart
@@ -22,21 +20,27 @@ const addToCart = async (req, res) => {
 
   console.log("exiting_item", existingItem);
 
-  //if yes then update quantity and price
   if (existingItem) {
-    existingItem.quantity += quantity;
-    existingItem.price += price;
-
-    await existingItem.save();
     return {
       status: 201,
-      message: "Already Added! updated cart",
+      message: "Already Added! Go to cart and update quantity",
     };
   } else {
     const response = await Cart.create(req.body);
     // console.log("added to cart response", response);
     return response;
   }
+
+  //if yes then update quantity and price
+  // if (existingItem) {
+  //   existingItem.quantity += quantity;
+  //   existingItem.price += price;
+
+  //   await existingItem.save();
+  //   return {
+  //     status: 201,
+  //     message: "Already Added! updated cart",
+  //   };
 };
 
 const viewCart = async (req, res) => {
@@ -51,13 +55,13 @@ const viewCart = async (req, res) => {
 
   console.log("response", response);
 
-  //   let totalCost = 0;
+  let totalCost = 0;
 
-  //   response.map((item) => {
-  //     totalCost += item.price * item.quantity;
-  //   });
+  response.map((item) => {
+    totalCost += item.price * item.quantity;
+  });
 
-  return response;
+  return [totalCost, ...response];
 };
 
 //to update quantity
@@ -65,6 +69,8 @@ const updateCart = async (req, res) => {
   const userId = req.user.id;
   const productId = toInteger(req.params.id);
   const quantity = req.body.quantity; // New quantity value
+
+  console.log("quantity in updateCart", quantity);
 
   const result = await Cart.update(
     {
@@ -82,6 +88,9 @@ const removeCartItem = async (req, res) => {
   const userId = req.user.id;
   const productId = toInteger(req.params.id);
 
+  // console.log("userId:", userId);
+  // console.log("productId:", productId);
+
   const response = await Cart.destroy({
     where: {
       userId,
@@ -89,7 +98,20 @@ const removeCartItem = async (req, res) => {
     },
   });
 
-  return response;
+  // console.log("response", response);
+
+  if (response === 1) {
+    const result = await Cart.findAll({
+      where: {
+        userId,
+      },
+      include: Product,
+    });
+
+    if (result) {
+      return result;
+    }
+  }
 };
 
 const clearCart = async (req, res) => {
@@ -103,6 +125,13 @@ const clearCart = async (req, res) => {
 
   return response;
 };
+
+// const increaseQty = async (req, res) => {
+//   const userId = req.user.id;
+
+//   await Cart.update{}
+
+// };
 
 module.exports = {
   addToCart,

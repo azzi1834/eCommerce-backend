@@ -19,6 +19,7 @@ routes.get("/view-cart", async (req, res) => {
 });
 
 routes.put("/:id/update-cart", async (req, res) => {
+  console.log("req.body", req.body);
   const response = await cartController.updateCart(req, res);
   if (response[0] === 1) {
     return res.status(200).json("update successfuly");
@@ -28,12 +29,9 @@ routes.put("/:id/update-cart", async (req, res) => {
 routes.delete("/:id/remove-item", async (req, res) => {
   const response = await cartController.removeCartItem(req, res);
 
-  if (response === 0) {
-    return res.status(200).json("no product to remove");
-  } else if (response === 1) {
-    return res.status(200).json("removed succesfully");
-  }
-  return res.status(401).json("internal server error");
+  if (response) {
+    return res.status(200).json(response);
+  } else return res.status(401).json("internal server error");
 });
 
 routes.delete("/clear-cart", async (req, res) => {
@@ -42,9 +40,16 @@ routes.delete("/clear-cart", async (req, res) => {
   if (response === 0) {
     return res.status(200).json("no product to remove");
   } else if (response > 0) {
-    return res.status(200).json("removed succesfully");
-  }
-  return res.status(401).json("internal server error");
+    return res.status(200).json("cart cleared succesfully");
+  } else return res.status(401).json("internal server error");
 });
+
+// routes.put("/:id/increase-quantity", async (req, res) => {
+//   await cartController.increaseQty(req, res);
+// });
+
+// routes.put("/:id/decrease-quantity", async (req, res) => {
+//   await cartController.decreaseQty(req, res);
+// });
 
 module.exports = routes;
